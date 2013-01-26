@@ -25,14 +25,17 @@ for rw in rv:
    RC_LEN=5                # Length of each turnstile record at a given time (this excludes first three elements in each row)
    j=3
    while j<len(rw):
-    if rw[j]==CH_WKD:
+    wd=rw[j].split('-'); 
+    if int(wd[1]) ==9 : #and int(wd[1])>=7 : 
+     dt=datetime.date(int("20"+wd[2]),int(wd[0]),int(wd[1]))
+     tm=rw[j+1].split(":")
+     dtm=datetime.time(int(tm[0]),int(tm[1]),int(tm[2]))
+     T_tm=datetime.datetime.combine(dt,dtm)     # Converting time to the datetime format in python
      if (T_ent <0):
       T_ent=int(rw[j+3])      # Update entry count on turnstile
       T_exit=int(rw[j+4])    # Update exit count on turnstile
-      T_tm=datetime.datetime.strptime(rw[j+1],'%H:%M:%S')     # Converting time to the datetime format in python
       trun.append([SCP,T_tm, 0,0])      
      else :
-      T_tm=datetime.datetime.strptime(rw[j+1],'%H:%M:%S')    # Converting time to the datetime format in python
       trun.append([SCP,T_tm,int(rw[j+3])-T_ent ,int(rw[j+4])-T_exit])      
       T_ent=int(rw[j+3]) 
       T_exit=int(rw[j+4]) 
