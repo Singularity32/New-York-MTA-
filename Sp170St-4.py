@@ -9,8 +9,10 @@ f2=open("./Turnstile/Sp170St.txt","wb")
 rv=csv.reader(f1)
 ro=csv.writer(f2)
 fig=plt.figure()
+ax1=fig.add_subplot(2,1,1)
+ax2=fig.add_subplot(2,1,2)
 print "The station we are analyzing is 170th Street on line 4"
-REMOTE="R243"; BOOTH="R284" # This is the code for the subway stop
+REMOTE="R008"; BOOTH="J035" # This is the code for the subway stop
 print "We are considering turnstile numbers over the weekday from Jan 7th to Jan 11, 2013"
 T_ent=-1     # Entry count on turnstile
 T_exit=-1   # Exit count on turnstile
@@ -67,7 +69,14 @@ tmx =mtd.date2num(sum_T[0][:])
 y1 =sum_T[1][:]
 y2 =sum_T[2][:]
 # print jt[0].isoformat(' '),jt[1],jt[2] 
-plt.plot(tmx,y1)
-plt.plot(tmx,y2)
+ax1.plot(tmx,y1)
+ax1.plot(tmx,y2)
+wed=[]
+for j in sum_EE :
+ if j[0].isoweekday()==3: wed.append(j)
+twed=transpose(wed)
+ax2.plot(twed[0][:],twed[1][:])
+ax2.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+ax2.xaxis.set_major_locator(HourLocator(interval=3))
 plt.show()
 
