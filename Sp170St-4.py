@@ -1,5 +1,6 @@
 import csv
 import datetime
+from pylab import *
 from matplotlib.pylab import plt
 from matplotlib import dates as mtd
 from matplotlib.dates import HourLocator, DateFormatter
@@ -61,12 +62,11 @@ for line in trun :
   sum_EE[j][2]=sum_EE[j][2]+ line[3]
   j=j+1
 
-tmx,y1,y2=[],[],[]
-for jt in sum_EE : 
- tmx.append(mtd.date2num(jt[0]))  
- y1.append(jt[1])
- y2.append(jt[2])
- print jt[0].isoformat(' '),jt[1],jt[2] 
+sum_T =transpose(sum_EE) 
+tmx =mtd.date2num(sum_T[0][:])  
+y1 =sum_T[1][:]
+y2 =sum_T[2][:]
+# print jt[0].isoformat(' '),jt[1],jt[2] 
 plt.plot(tmx,y1)
 plt.plot(tmx,y2)
 plt.show()
