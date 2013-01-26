@@ -1,6 +1,7 @@
 import csv
 import datetime
 from matplotlib.pylab import plt
+from matplotlib import dates as mtd
 from matplotlib.dates import HourLocator, DateFormatter
 f1=open("./Turnstile/Turnstile-Data.txt","rb")
 f2=open("./Turnstile/Sp170St.txt","wb")
@@ -49,7 +50,6 @@ j=0
 T_ent_t=0; T_exit_t=0   # Total entry and exit for a given time from all the turnstiles respectively.
 SCP= trun[0][0]
 for line in trun :
- print line[1],line[2],line[3]
  if ct==0 and line[0]==SCP:
   sum_EE.append([line[1], line[2],line[3]])
  else:
@@ -61,7 +61,13 @@ for line in trun :
   sum_EE[j][2]=sum_EE[j][2]+ line[3]
   j=j+1
 
-for line in sum_EE:
- print line, sum_EE.index(line)
-
+tmx,y1,y2=[],[],[]
+for jt in sum_EE : 
+ tmx.append(mtd.date2num(jt[0]))  
+ y1.append(jt[1])
+ y2.append(jt[2])
+ print jt[0].isoformat(' '),jt[1],jt[2] 
+plt.plot(tmx,y1)
+plt.plot(tmx,y2)
+plt.show()
 
