@@ -3,16 +3,16 @@ import datetime
 from pylab import *
 from matplotlib.pylab import plt
 from matplotlib import dates as mtd
-from matplotlib.dates import HourLocator, DateFormatter
+from matplotlib.dates import HourLocator, DayLocator,DateFormatter
 f1=open("./Turnstile/Turnstile-Data.txt","rb")
-f2=open("./Turnstile/Sp170St.txt","wb")
+#f2=open("./Turnstile/Sp170St.txt","wb")
 rv=csv.reader(f1)
-ro=csv.writer(f2)
-fig=plt.figure()
-ax1=fig.add_subplot(2,1,1)
-ax2=fig.add_subplot(2,1,2)
+#ro=csv.writer(f2)
+fig=plt.figure(figsize=(10,8))
+ax1=fig.add_subplot(3,1,1)
+ax2=fig.add_subplot(3,1,3)
 print "The station we are analyzing is 170th Street on line 4"
-REMOTE="R008"; BOOTH="J035" # This is the code for the subway stop
+REMOTE="R243"; BOOTH="R284" # This is the code for the subway stop
 print "We are considering turnstile numbers over the weekday from Jan 7th to Jan 11, 2013"
 T_ent=-1     # Entry count on turnstile
 T_exit=-1   # Exit count on turnstile
@@ -65,18 +65,33 @@ for line in trun :
   j=j+1
 
 sum_T =transpose(sum_EE) 
-tmx =mtd.date2num(sum_T[0][:])  
+tmx =sum_T[0][:]  
 y1 =sum_T[1][:]
 y2 =sum_T[2][:]
 # print jt[0].isoformat(' '),jt[1],jt[2] 
-ax1.plot(tmx,y1)
-ax1.plot(tmx,y2)
+ax1.plot(tmx,y1, label="Entry")
+ax1.plot(tmx,y2,label="Exit")
+ax1.set_xticklabels(["M","Tu","W", "Th","F"])
+wkd=[]
+for j in range(7,12):
+ dt=datetime.time(12,00,00)
+ dd=datetime.date(2013,01,j)
+ wkd.append(datetime.datetime.combine(dd,dt))
+ax1.set_xticks(wkd)
+ax1.set_ylim(0,6000)
+ax1.set_xlabel("Day of Week")
+fig.suptitle("Entry and Exit at 170th Street, Bronx (Line 4)")
+ax1.set_title("Number of people entering and exiting subway stop every 3 hours (Weekdays)")
+ax1.legend(loc=0,prop={'size':8})
 wed=[]
 for j in sum_EE :
  if j[0].isoweekday()==3: wed.append(j)
 twed=transpose(wed)
-ax2.plot(twed[0][:],twed[1][:])
+ax2.plot(twed[0][:],twed[1][:],label="Entry")
+ax2.plot(twed[0][:],twed[2][:],label="Exit")
 ax2.xaxis.set_major_formatter(DateFormatter("%H:%M"))
 ax2.xaxis.set_major_locator(HourLocator(interval=3))
+ax2.set_title("Number of people entering and exiting subway stop every 3 hours (Wednesday)")
+legend()
+savefig("./Turnstile/170St-4.png")
 plt.show()
-
