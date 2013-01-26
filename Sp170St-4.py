@@ -1,14 +1,15 @@
 import csv
 import datetime
 from matplotlib.pylab import plt
+from matplotlib.dates import HourLocator, DateFormatter
 f1=open("./Turnstile/Turnstile-Data.txt","rb")
 f2=open("./Turnstile/Sp170St.txt","wb")
 rv=csv.reader(f1)
 ro=csv.writer(f2)
+fig=plt.figure()
 print "The station we are analyzing is 170th Street on line 4"
 REMOTE="R243"; BOOTH="R284" # This is the code for the subway stop
-print "The weekday we consider is Wednesday Jan 9, 2013"
-CH_WKD="01-09-13"
+print "We are considering turnstile numbers over the weekday from Jan 7th to Jan 11, 2013"
 T_ent=-1     # Entry count on turnstile
 T_exit=-1   # Exit count on turnstile
 trun=[]
@@ -26,7 +27,7 @@ for rw in rv:
    j=3
    while j<len(rw):
     wd=rw[j].split('-'); 
-    if int(wd[1]) ==9 : #and int(wd[1])>=7 : 
+    if int(wd[1]) <=11 and int(wd[1])>=7 and rw[j+2]=="REGULAR" : 
      dt=datetime.date(int("20"+wd[2]),int(wd[0]),int(wd[1]))
      tm=rw[j+1].split(":")
      dtm=datetime.time(int(tm[0]),int(tm[1]),int(tm[2]))
@@ -48,7 +49,7 @@ j=0
 T_ent_t=0; T_exit_t=0   # Total entry and exit for a given time from all the turnstiles respectively.
 SCP= trun[0][0]
 for line in trun :
- print line[0],line[2],line[3]
+ print line[1],line[2],line[3]
  if ct==0 and line[0]==SCP:
   sum_EE.append([line[1], line[2],line[3]])
  else:
