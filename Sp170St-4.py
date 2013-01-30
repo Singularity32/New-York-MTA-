@@ -11,6 +11,8 @@ rv=csv.reader(f1)
 fig=plt.figure(figsize=(10,8))
 ax1=fig.add_subplot(3,1,1)
 ax2=fig.add_subplot(3,1,3)
+fig_wnd=plt.figure()
+ax1_wnd=fig_wnd.add_subplot(3,1,1)
 print "The station we are analyzing is 170th Street on line 4"
 REMOTE="R243"; BOOTH="R284" # This is the code for the subway stop
 print "We are considering turnstile numbers over the weekday from Jan 7th to Jan 11, 2013"
@@ -31,7 +33,7 @@ for rw in rv:
    j=3
    while j<len(rw):
     wd=rw[j].split('-'); 
-    if int(wd[1]) <=11 and int(wd[1])>=7 and rw[j+2]=="REGULAR" : 
+    if rw[j+2]=="REGULAR" : 
      dt=datetime.date(int("20"+wd[2]),int(wd[0]),int(wd[1]))
      tm=rw[j+1].split(":")
      dtm=datetime.time(int(tm[0]),int(tm[1]),int(tm[2]))
@@ -64,13 +66,23 @@ for line in trun :
   sum_EE[j][2]=sum_EE[j][2]+ line[3]
   j=j+1
 
+
 sum_T =transpose(sum_EE) 
-tmx =sum_T[0][:]  
-y1 =sum_T[1][:]
-y2 =sum_T[2][:]
+tmx_wkd,tmx_wnd=[],[]
+y1_wkd,y1_wnd=[],[]
+y2_wkd,y2_wnd=[],[]
+for j,dmv in enumerate(sum_T[0]):
+ if (dmv.isoweekday() <= 5):
+  tmx_wkd.append(dmv)  
+  y1_wkd.append(sum_T[1][j])
+  y2_wkd.append(sum_T[2][j])
+ else :
+  tmx_wnd.append(dmv)  
+  y1_wnd.append(sum_T[1][j])
+  y2_wnd.append(sum_T[2][j])
 # print jt[0].isoformat(' '),jt[1],jt[2] 
-ax1.plot(tmx,y1, label="Entry")
-ax1.plot(tmx,y2,label="Exit")
+ax1.plot(tmx_wkd,y1_wkd, label="Entry")
+ax1.plot(tmx_wkd,y2_wkd,label="Exit")
 ax1.set_xticklabels(["M","Tu","W", "Th","F"])
 wkd=[]
 for j in range(7,12):
@@ -80,7 +92,7 @@ for j in range(7,12):
 ax1.set_xticks(wkd)
 ax1.set_ylim(0,6000)
 ax1.set_xlabel("Day of Week")
-fig.suptitle("Entry and Exit at 170th Street, Bronx (Line 4)")
+fig.suptitle("Entry and Exit at 170th Street, Bronx (Line 4): Weekdays")
 ax1.set_title("Number of people entering and exiting subway stop every 3 hours (Weekdays)")
 ax1.legend(loc=0,prop={'size':8})
 wed=[]
@@ -92,6 +104,13 @@ ax2.plot(twed[0][:],twed[2][:],label="Exit")
 ax2.xaxis.set_major_formatter(DateFormatter("%H:%M"))
 ax2.xaxis.set_major_locator(HourLocator(interval=3))
 ax2.set_title("Number of people entering and exiting subway stop every 3 hours (Wednesday)")
-legend()
-savefig("./Turnstile/170St-4.png")
+ax2.legend(loc=0,prop={'size':8})
+savefig("./Turnstile/170St-4-WKD.png")
+fig_wnd.suptitle("Entry and Exit at 170th Street, Bronx (Line 4) : Weekends")
+ax1_wnd.plot(tmx_wnd,y1_wnd, label="Entry")
+ax1_wnd.plot(tmx_wnd,y2_wnd,label="Exit")
+ax1_wnd.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+ax1_wnd.xaxis.set_major_locator(HourLocator(interval=6))
+ax1_wnd.legend(loc=0,prop={'size':8})
+savefig("./Turnstile/170St-4-WND.png")
 plt.show()
