@@ -119,7 +119,7 @@ for j,pol in enumerate(poly):
  s+= len(pol)-3
 
 neigh.sort(key=lambda x:x[1])
-Star_Co=[]
+star_Co=[]
 pgon=[]
 for j,nb in enumerate(neigh):
  if (not nb[2].startswith("park_cem")):

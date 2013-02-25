@@ -105,24 +105,15 @@ for j,pol in enumerate(poly):
 neigh.sort()
 star_Co=[]
 
-m=Basemap(projection='merc', llcrnrlon=-74.31,llcrnrlat=40.47,urcrnrlon=-73.63,urcrnrlat=40.92,lon_0=-73.981,lat_0=40.758,resolution='h')
+m=Basemap(projection='lcc', llcrnrlon=-74.31,llcrnrlat=40.47,urcrnrlon=-73.63,urcrnrlat=40.92,lon_0=-73.981,lat_0=40.758,resolution='h')
 m_st=m.drawstates()
 m_cl=m.drawcoastlines()
 for j,nb in enumerate(neigh):
  if (not nb[2].startswith("park_cem")):
-    star_Co=sqrt(nb[0]/neigh[-1][0])
+    star_Co=(nb[0]/neigh[-1][0])
     geom(nb[3],nb[2],star_Co) 
 
-plt.savefig("Stop-Area-Color.png")
-close()
-neigh.sort(key=lambda x:x[1])
-for j,nb in enumerate(neigh):
- if (not nb[2].startswith("park_cem")):
-    star_Co=sqrt(nb[1]/neigh[-1][1])
-    geom(nb[3],nb[2],star_Co) 
-plt.gca().colorbar()
-
-plt.savefig("Stop-Color.png")
+plt.savefig("Stop-Area-Color-NN.png")
 x=[l[0] for l in neigh]
 fig=figure(figsize=(8,6))
 fig.suptitle("Distribution of subway stops/unit area across the 193 neighborhoods of NYC")
