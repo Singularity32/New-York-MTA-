@@ -4,8 +4,6 @@ import shapefile
 import pyproj
 import csv
 from mpl_toolkits.basemap import Basemap
-from matplotlib.patches import Rectangle
-from matplotlib.patches import Polygon
 # Determining the quadrant of a vector
 def quad_det(x,y):
 	if x >= 0:
@@ -56,7 +54,7 @@ def geom(ngon,name,co):
  pol=zip(x,y)
  poly=Polygon(pol,label=name,fill=True,color=cm.OrRd(co))
  plt.gca().add_patch(poly)
- return poly   
+    
 f1=open("./MTA Feeds/stops.txt")
 #f3=open("UnId-Stops.csv","wb")
 lats,lons,name=[],[],[]
@@ -79,24 +77,11 @@ shs=sf.shapes()
 rcs=sf.records()
 
 
-
-m=Basemap(projection='lcc', llcrnrlon=-74.31,llcrnrlat=40.47,urcrnrlon=-73.63,urcrnrlat=40.92,lon_0=-73.981,lat_0=40.758,resolution='h')
-m_st=m.drawstates()
-m_cl=m.drawcoastlines()
-
-
-
-
-Rect=[]
 poly=[]
 for j,sh in enumerate(shs):
    poly.append([rcs[j][4],sh.points,sh.bbox])
-   x_l,y_l = m(sh.bbox[0],sh.bbox[1])
-   x_r,y_r = m(sh.bbox[2],sh.bbox[3])
-   Rect.append(Rectangle((x_l,y_l),x_r-x_l,y_r-y_l))
 neigh=[]
 s=0
-
 
 for pt in zip(name,lons,lats):
   det=False
@@ -117,34 +102,27 @@ s=0
 for j,pol in enumerate(poly):
  neigh.append([float(len(pol)-3)/rcs[j][0],len(pol)-3,pol[0],pol[1]])
  s+= len(pol)-3
+neigh.sort()
+star_Co=[]
 
-neigh.sort(key=lambda x:x[1])
-Star_Co=[]
-pgon=[]
+m=Basemap(projection='merc', llcrnrlon=-74.31,llcrnrlat=40.47,urcrnrlon=-73.63,urcrnrlat=40.92,lon_0=-73.981,lat_0=40.758,resolution='h')
+m_st=m.drawstates()
+m_cl=m.drawcoastlines()
 for j,nb in enumerate(neigh):
  if (not nb[2].startswith("park_cem")):
-    star_Co.append(nb[1]*1.0/neigh[-1][1])
-    if nb[1]<0: print nb[1],nb[2]
-    pgon.append(geom(nb[3],nb[2],star_Co[-1]))
-an=[]
-for j,sh in enumerate(shs):
-    at=annotate(str(rcs[j][4])+ '\n'+str(len(poly[j])-3),xy=m((sh.bbox[0] + sh.bbox[2])/2,(sh.bbox[1] + sh.bbox[3])/2),size='medium',visible=False)   
-    an.append(at)
-#imshow(Star_Co,cmap=cm.OrRd)
-#colorbar()
+    star_Co=sqrt(nb[0]/neigh[-1][0])
+    geom(nb[3],nb[2],star_Co) 
+
+plt.savefig("Stop-Area-Color.png")
+close()
+neigh.sort(key=lambda x:x[1])
+for j,nb in enumerate(neigh):
+ if (not nb[2].startswith("park_cem")):
+    star_Co=sqrt(nb[1]/neigh[-1][1])
+    geom(nb[3],nb[2],star_Co) 
+plt.gca().colorbar()
+
 plt.savefig("Stop-Color.png")
-
-def onclick(event):
-    for j,R in enumerate(Rect): 
-          if (not rcs[j][4].startswith("park_cem")):
-                if (event.xdata > R.get_x() and event.xdata < (R.get_x() +R.get_width()) and event.ydata > R.get_y() and event.ydata < (R.get_y() +R.get_height())):
-                  print "Yes"
-                  an[j].set_visible(True)      
-                  plt.show()
-                else:
-                   an[j].set_visible(False)
-
-cid = gcf().canvas.mpl_connect('button_press_event', onclick)
 x=[l[0] for l in neigh]
 fig=figure(figsize=(8,6))
 fig.suptitle("Distribution of subway stops/unit area across the 193 neighborhoods of NYC")
