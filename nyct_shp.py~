@@ -1,0 +1,142 @@
+# This file determines the ranks of neighborhoods based on the number of subway stops per unit area. 
+from scipy.optimize import curve_fit
+import shapefile
+import pyproj
+import csv
+from mpl_toolkits.basemap import Basemap
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Polygon
+# Determining the quadrant of a vector
+def quad_det(x,y):
+	if x >= 0:
+	  if y>=0 : return 0
+	  else : return 3
+	else:
+	  if y>=0: return 1
+	  else : return 2     
+# Determining if a point is in a polygon    
+def PiP(pol,x,y):
+   q_count,quad_p=0,-1
+   quad=0
+   for ps in pol:
+       dx=ps[0]-x
+       dy=ps[1]-y
+       if dx==0 or dy==0: return True
+       quad =quad_det(dx,dy)
+       if (quad_p >=0):
+          if (quad-quad_p)%4 ==1:
+              q_count+= 1
+          elif (quad-quad_p)%4 ==3:
+              q_count-=1
+          elif (quad - quad_p)%4 ==2:  # Here we have to determine if the quadrant changed in a clockwise or ant-clockwise direction.
+              det=False
+              while (det==False):      # Choose a point on the line joining the two vectors
+                 r= rand()
+                 p_x =dx_p + r*(dx-dx_p)
+                 p_y = dy_p + r*(dy-dy_p)
+                 quad_m = quad_det(p_x,p_y)
+                 if (quad_m!=quad) and (quad_m!=quad_p) :
+                       if (quad_m -quad_p)%4==1:
+                         q_count+=2          
+                       else:
+                         q_count-=2          
+                       det=True  
+       dx_p=dx
+       dy_p=dy
+       quad_p=quad        
+   if abs(q_count)==4:
+       return True
+   else:
+       return False
+
+def geom(ngon,name,co):
+ lons,lats=zip(*ngon)
+ x,y=m(lons,lats)
+ #print name, x[10],y[10]
+ pol=zip(x,y)
+ poly=Polygon(pol,label=name,fill=True,color=cm.OrRd(co))
+ plt.gca().add_patch(poly)
+ return poly   
+f1=open("./MTA Feeds/stops.txt")
+#f3=open("UnId-Stops.csv","wb")
+lats,lons,name=[],[],[]
+#cs_wst =csv.writer(f3)
+cs_readstops = csv.DictReader(f1)
+
+
+for j, rec in enumerate(cs_readstops):
+ if rec['location_type']=='1':
+   lats.append(rec['stop_lat'])
+   lons.append(rec['stop_lon'])
+   name.append(rec['stop_name'])
+
+
+ptx=[]
+pty=[]
+# Shapefile for the neighborhoods
+sf=shapefile.Reader("../../Data Science/NYC GIS/nyct2010/nyct2010")
+shs=sf.shapes()
+rcs=sf.records()
+
+m=Basemap(projection='lcc', llcrnrlon=-74.31,llcrnrlat=40.47,urcrnrlon=-73.63,urcrnrlat=40.92,lon_0=-73.981,lat_0=40.758,resolution='h')
+m_st=m.drawstates()
+m_cl=m.drawcoastlines()
+
+f5=open("bb","wb")
+
+pj=pyproj.Proj(init="epsg:3628",preserve_units=True)
+Rect=[]
+poly=[]
+for j,sh in enumerate(shs):
+   x,y=zip(*sh.points)
+   x_l,y_l=pj(x,y,inverse=True)
+   rec_poly=zip(x_l,y_l)   
+   bb_x,bb_y=zip(*reshape(sh.bbox,(2,2)))
+   bb_lat,bb_lon=pj(bb_x,bb_y,inverse=True)
+   bbox=reshape(zip(bb_lat,bb_lon),4)  
+   f5.writelines([str(bbox)])
+   poly.append([rcs[j][7],rec_poly,bbox])
+   x_l,y_l = m(sh.bbox[0],sh.bbox[1])
+   x_r,y_r = m(sh.bbox[2],sh.bbox[3])
+   Rect.append(Rectangle((x_l,y_l),x_r-x_l,y_r-y_l))
+neigh=[]
+s=0
+s2=[0,0,0,0,0]
+
+for pt in zip(name,lons,lats):
+  det=False
+  for j,pol in enumerate(poly):
+       # Determine if the point is inside the bounding box of the neighborhood shape
+	    if(float(pt[1])>=pol[2][0] and float(pt[1])<=pol[2][2] and float(pt[2])>=pol[2][1] and float(pt[2])<=pol[2][3]): 
+		  if PiP(pol[1],float(pt[1]),float(pt[2])):
+			  det=True
+			  pol.append(pt[0])
+                          if rcs[j][1].startswith("Sta"):
+                                 s2[0]+=1
+                          if rcs[j][1].startswith("The"):
+                                 s2[1]+=1
+                          if rcs[j][1].startswith("Quee"):
+                                 s2[2]+=1
+                          if rcs[j][1].startswith("Broo"):
+                                 s2[3]+=1
+                          if rcs[j][1].startswith("Man"):
+                                 s2[4]+=1
+            
+  if det==False: 
+    print [pt[0],pt[1],pt[2]]  
+    s=s+1
+print s
+
+print "Number of stops in each borough", s2
+s=0
+for j,pol in enumerate(poly):
+ neigh.append([float(len(pol)-3),len(pol)-3,pol[0],pol[1]])
+ s+= len(pol)-3
+print s
+neigh.sort()
+for nb in neigh[-1:-10:-1]:
+ print nb[1],nb[2]
+neigh.sort(key=lambda x:x[1])
+star_Co=[]
+pgon=[]
+
