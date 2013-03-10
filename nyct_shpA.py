@@ -109,7 +109,7 @@ neigh=[]
 s=0
 po=[j[0] for j in poly]
 po.sort()
-print po
+print po[-1]
 star_Co=[]
 #inc=[p[0] for p in poly]
 #f=figure()
@@ -117,7 +117,7 @@ star_Co=[]
 #ax.hist(inc)
 pgon=[]
 for j,pol in enumerate(poly):
-    star_Co =  pol[0]/max_inc
+    star_Co =  pol[0]*1.0/po[-1]
     pgon.append(geom(pol[1],pol[0],star_Co))
 an=[]
 plt.show()
@@ -127,6 +127,28 @@ for j,pol in enumerate(poly):
 #imshow(Star_Co,cmap=cm.OrRd)
 #colorbar()
 #plt.savefig("Stop-Color.png")
+fl1=open("stationWeatherDiff.csv","rb")
+print "Something"
+csr1=csv.DictReader(fl1)
+csr2=csv.DictReader(f1)
+x,y,siz,co=[],[],[],[]
+for rc1 in csr1:
+  f1.seek(0)
+  for rc2 in csr2:
+     if  rc1["Station Name"].lower()==rc2["stop_name"].lower() :
+         lons,lats=m(float(rc2["stop_lon"]),float(rc2["stop_lat"]))
+         x.append(lons)
+         y.append(lats)
+         siz.append(exp(20*abs(float(rc1["normedDiff"]))))
+         if float(rc1["normedDiff"]) > 0 : 
+             co.append((0.0,0,1.0))
+         else:
+             co.append((1.0,0,0))
+   
+
+f_s=figure()
+ax=f_s.add_subplot(1,1,1)
+ax.scatter(x,y,s=siz,color=co,marker='o')
 
 def onclick(event):
     for j,pol in enumerate(poly): 
